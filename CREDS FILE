@@ -1,3 +1,9 @@
+#Name: Christine Simon
+# Class: CIS 3368 Professor Suresh
+#Item: Midterm
+#Date: 10/05/2023
+
+
 class creds:
     connectionstring = 'cis3368christine.cp8qyjtysdfh.us-east-1.rds.amazonaws.com'
     username = 'Chrissy24'
