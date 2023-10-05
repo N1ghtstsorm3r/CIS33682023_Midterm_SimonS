@@ -1,0 +1,100 @@
+#Name: Christine Simon
+# Class: CIS 3368 Professor Suresh
+#Item: Midterm
+#Date: 10/05/2023
+
+
+# Creeate REST API
+import flask
+from flask import jsonify  # Pip install flask, if it ever breaks
+from flask import request
+
+ 
+from sql import create_con
+from sql import execute_myquery
+from sql import execute_read_myquery #This written out only the functions you need
+
+ 
+import creds
+
+
+#Resources: Class 4, Class 5, Class 6 Notes, Creds.py file, sql.py file from all hwk, Class Notes 
+
+# Create an application and its setup
+app = flask.Flask(__name__)  # This is your application name this is a restAPI file so the name would be RESTAPI
+app.config['DEBUG'] = True  # This is used to see any kind of errors in the browser, aka the 4xx, 5xx 3xx etc
+
+ 
+#---------------------------------------THIS IS THE TEST CONNECTION (It works)----------------------------
+@app.route('/', methods=['GET'])
+def defaultmessage():
+    return "<h1> What Medicine Would you like to pull! </h1>"
+
+ #-------------------------------------API 'GET' METHOD TO OBTAIN ALL INFORMATION---------------------------
+
+
+    
+@app.route('/api/medicine/all', methods=['GET'])  # USE THIS ENDPOINT ON POSTMAN http://127.0.0.1:5000/api/zoo/all
+def all_animals():
+    myCreds = creds.creds()
+    conn = create_con(myCreds.connectionstring, myCreds.username, myCreds.passwd, myCreds.dataBase)
+    sql = 'SELECT * FROM medicine'
+    medicine = execute_read_myquery(conn, sql)
+    conn.close()  # Just remembered tSo close the connection
+    return jsonify(medicine)
+#Use control C to exit the application and create a defeault route
+  #-------------------------------------API 'GET' METHOD TO OBTAIN ONE BY ID INFORMATION---------------------------
+
+@app.route('/api/medicine', methods=['GET']) # USE THIS ENDPOINT ON POSTMAN http://127.0.0.1:5000/api/zoo!id=1
+def find_animal(): #THIS IS WHAT PROFESSOR OTTO HAD BUT MODIFIED
+    if 'id' in request.args:
+        id = int(request.args['id'])
+    else:
+        return 'Error: No ID is provided!'
+    myCreds = creds.creds()
+    conn = create_con(myCreds.connectionstring, myCreds.username, myCreds.passwd, myCreds.dataBase)
+    sql = "SELECT * FROM medicine WHERE id=%s"
+    medcab = execute_read_myquery(conn, sql, (id,))
+    conn.close()  # Closing connection again
+    return jsonify(medcab)
+
+ #------------------------------POST A NEW ANIMAL----------------------------
+
+@app.route('/api/zoo', methods=['POST']) #http://127.0.0.1:5000/api/zoo
+def New_Med():
+    request_data = request.get_json()
+    newmedcode = request_data['Code']
+    newmedname = request_data['Name']
+    newmedqty = request_data['QTY']
+    newmedcost = request_data['Cost']
+    
+
+    myCreds = creds.creds()
+    conn = create_con(myCreds.connectionstring, myCreds.username, myCreds.passwd, myCreds.dataBase)
+
+    # Had to fix this SQL query. Using parameters instead of string substitution.
+    sql = "INSERT INTO Medicine(domain, kingdom, class, species, ages, animalname, alive) VALUES (%s, %s, %s, %s, %s, %s, %s)"
+    execute_myquery(conn, sql, (newmedcode, newmedname, newmedqty, newmedcost))
+    conn.close()  # Connection would not work without being repeated and closed
+    return 'New Medicine has been added to the cabinet'
+
+
+ #----------------------------------------------DELETE ANIMAL---------------------------------------
+
+@app.route('/api/zoo', methods=['DELETE'])
+def animal_delete():
+    request_data = request.get_json() #Example ID quest http://127.0.0.1:5000/api/zoo?id=1
+    idtodelete = request_data['id']
+
+    myCreds = creds.creds()
+    conn = create_con(myCreds.connectionstring, myCreds.username, myCreds.passwd, myCreds.dataBase)
+
+    # Code taken from professor Suresh's class code
+    sql = "DELETE FROM zoo WHERE id = %s"
+    execute_myquery(conn, sql, (idtodelete,))
+    conn.close()
+    return "How sad, the animal was deleted!"
+
+
+app.run(debug=True, use_reloader = False)
+#http://127.0.0.1:5000 USE THIS FOR POSTMAN AND HOST
