@@ -3,7 +3,6 @@
 #Item: Midterm
 #Date: 10/05/2023
 
-
 # Creeate REST API
 import flask
 from flask import jsonify  # Pip install flask, if it ever breaks
@@ -35,7 +34,7 @@ def defaultmessage():
 
     
 @app.route('/api/medicine/all', methods=['GET'])  # USE THIS ENDPOINT ON POSTMAN http://127.0.0.1:5000/api/zoo/all
-def all_animals():
+def all_medicine():
     myCreds = creds.creds()
     conn = create_con(myCreds.connectionstring, myCreds.username, myCreds.passwd, myCreds.dataBase)
     sql = 'SELECT * FROM medicine'
@@ -45,7 +44,7 @@ def all_animals():
 #Use control C to exit the application and create a defeault route
   #-------------------------------------API 'GET' METHOD TO OBTAIN ONE BY ID INFORMATION---------------------------
 
-@app.route('/api/medicine', methods=['GET']) # USE THIS ENDPOINT ON POSTMAN http://127.0.0.1:5000/api/zoo!id=1
+@app.route('/api/medicine', methods=['GET']) # USE THIS ENDPOINT ON POSTMAN http://127.0.0.1:5000/api/medicine?id=1
 def find_animal(): #THIS IS WHAT PROFESSOR OTTO HAD BUT MODIFIED
     if 'id' in request.args:
         id = int(request.args['id'])
@@ -60,7 +59,7 @@ def find_animal(): #THIS IS WHAT PROFESSOR OTTO HAD BUT MODIFIED
 
  #------------------------------POST A NEW ANIMAL----------------------------
 
-@app.route('/api/zoo', methods=['POST']) #http://127.0.0.1:5000/api/zoo
+@app.route('/api/medicine', methods=['POST']) #http://127.0.0.1:5000/api/medicine
 def New_Med():
     request_data = request.get_json()
     newmedcode = request_data['Code']
@@ -73,7 +72,7 @@ def New_Med():
     conn = create_con(myCreds.connectionstring, myCreds.username, myCreds.passwd, myCreds.dataBase)
 
     # Had to fix this SQL query. Using parameters instead of string substitution.
-    sql = "INSERT INTO Medicine(domain, kingdom, class, species, ages, animalname, alive) VALUES (%s, %s, %s, %s, %s, %s, %s)"
+    sql = "INSERT INTO Medicine(Code, Name, QTY, Cost) VALUES (%s, %s, %s, %s)"
     execute_myquery(conn, sql, (newmedcode, newmedname, newmedqty, newmedcost))
     conn.close()  # Connection would not work without being repeated and closed
     return 'New Medicine has been added to the cabinet'
@@ -81,8 +80,8 @@ def New_Med():
 
  #----------------------------------------------DELETE ANIMAL---------------------------------------
 
-@app.route('/api/zoo', methods=['DELETE'])
-def animal_delete():
+@app.route('/api/medicine', methods=['DELETE']) #http://127.0.0.1:5000/api/medicine
+def medicine_delete():
     request_data = request.get_json() #Example ID quest http://127.0.0.1:5000/api/zoo?id=1
     idtodelete = request_data['id']
 
@@ -90,10 +89,10 @@ def animal_delete():
     conn = create_con(myCreds.connectionstring, myCreds.username, myCreds.passwd, myCreds.dataBase)
 
     # Code taken from professor Suresh's class code
-    sql = "DELETE FROM zoo WHERE id = %s"
+    sql = "DELETE FROM Medicine WHERE id = %s"
     execute_myquery(conn, sql, (idtodelete,))
     conn.close()
-    return "How sad, the animal was deleted!"
+    return "You're out of this medication!"
 
 
 app.run(debug=True, use_reloader = False)
